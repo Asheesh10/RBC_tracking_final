@@ -102,18 +102,27 @@ def detect_cells(frame, background, width_profile_dict, verbose=False):
     thresh_color = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
     cv2.watershed(thresh_color, markers)
 
-    # Extract cell contours
-    cell_data = []
-    for label in np.unique(markers):
-        if label <= 0:
-            continue
+    # Watershed boundaries separate labels, so find cell contours together.
+    cell_mask = np.where(markers > 1, 1, 0).astype(np.uint8)
+    cell_contours, _ = cv2.findContours(
+        cell_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
 
-        # Extract contour
-        contour = np.where(markers == label, 1, 0).astype(np.uint8)
-        cnts, _ = cv2.findContours(contour, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if not cnts:
-            continue
-        cnt = cnts[0]
+    contours_by_label = {}
+    for contour in cell_contours:
+        x, y = contour[0, 0]
+        contours_by_label.setdefault(int(markers[y, x]), contour)
+
+    background_mask = np.where(markers == 1, 1, 0).astype(np.uint8)
+    background_contours, _ = cv2.findContours(
+        background_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
+    if background_contours:
+        contours_by_label[1] = background_contours[0]
+
+    cell_data = []
+    for label in sorted(contours_by_label):
+        cnt = contours_by_label[label]
 
         # Filter by area (remove noise)
         area = cv2.contourArea(cnt)
@@ -227,7 +236,7 @@ class CellTracker:
 
         for i, tid in enumerate(valid_tracks):
             track = self.tracks[tid]
-            pred_pos = track["state"].state[:2]
+            pred_pos = track["state"].statePost[:2, 0]
             for j, (cx, cy, area, circ) in enumerate(detections):
                 dist = (cx - pred_pos[0])**2 + (cy - pred_pos[1])**2
                 cost_matrix[i, j] = dist
@@ -256,26 +265,11 @@ class CellTracker:
             cx, cy, area, circ = detections[det_idx]
 
             track = self.tracks[tid]
-            if track["state"] is None:
-                # Initialize Kalman filter
-                kf = cv2.KalmanFilter(4, 2)
-                kf.measurementMatrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], dtype=np.float32)
-                kf.transitionMatrix = np.array([[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=np.float32)
-                kf.processNoiseCov = np.eye(4, dtype=np.float32) * 0.03
-                kf.measurementNoiseCov = np.eye(2, dtype=np.float32) * 10
-                kf.errorCov = np.eye(4, dtype=np.float32)
-                kf.state = np.array([float(cx), float(cy), 0.0, 0.0], dtype=np.float32)  # (x, y, vx, vy)
-
-                track["state"] = kf
-                track["hits"] = 1
-                track["last_seen"] = self.frame_num
-                track["path"] = [(self.frame_num, cx, cy, area, circ)]
-            else:
-                # Update with new detection
-                track["state"].correct(np.array([[cx, cy]], dtype=np.float32))
-                track["hits"] += 1
-                track["last_seen"] = self.frame_num
-                track["path"].append((self.frame_num, cx, cy, area, circ))
+            measurement = np.array([[cx], [cy]], dtype=np.float32)
+            track["state"].correct(measurement)
+            track["hits"] += 1
+            track["last_seen"] = self.frame_num
+            track["path"].append((self.frame_num, cx, cy, area, circ))
 
         # Remove tracks that have aged out
         tracks_to_remove = []
@@ -293,9 +287,19 @@ class CellTracker:
         for det_idx in untracked_dets:
             cx, cy, area, circ = detections[det_idx]
 
+            kf = cv2.KalmanFilter(4, 2)
+            kf.measurementMatrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], dtype=np.float32)
+            kf.transitionMatrix = np.array([[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=np.float32)
+            kf.processNoiseCov = np.eye(4, dtype=np.float32) * 0.03
+            kf.measurementNoiseCov = np.eye(2, dtype=np.float32) * 10
+            kf.errorCovPost = np.eye(4, dtype=np.float32)
+            kf.statePost = np.array(
+                [[float(cx)], [float(cy)], [0.0], [0.0]], dtype=np.float32
+            )
+
             self.tracks[self.next_track_id] = {
-                "state": None,
-                "hits": 0,
+                "state": kf,
+                "hits": 1,
                 "last_seen": self.frame_num,
                 "path": [(self.frame_num, cx, cy, area, circ)]
             }
@@ -341,7 +345,7 @@ class CellTracker:
 # BIOMECHANICS CALCULATION
 # ====================================================================
 
-def compute_biomarker(track_path, width_profile):
+def compute_biomarker(track_path, width_profile, track_id):
     """
     Compute biomechanical metrics for a single cell track.
 
@@ -400,7 +404,7 @@ def compute_biomarker(track_path, width_profile):
         shape_recovery = post_circ / mid_circ if mid_circ > 0 else None
 
     return {
-        "track_id": track_path[0][0],
+        "track_id": track_id,
         "velocity_mean": float(velocity_mean),
         "velocity_max": float(velocity_max),
         "area_mean": float(area_mean),
@@ -413,6 +417,71 @@ def compute_biomarker(track_path, width_profile):
         "entrance_frame": frames[0],
         "exit_frame": frames[-1],
         "duration_ms": (frames[-1] - frames[0]) / 10  # 10ms/frame at 10kHz
+    }
+
+
+def build_track_biomarkers(all_trajectories, width_profile):
+    """Compute per-track biomechanical summaries from the current trajectory list."""
+    track_paths = defaultdict(list)
+    for traj in all_trajectories:
+        key = (traj["track_id"],)
+        track_paths[key].append((
+            traj["frame"],
+            traj["cx"],
+            traj["cy"],
+            traj["area"],
+            traj["circularity"]
+        ))
+
+    biomarkers = []
+    for key, path in track_paths.items():
+        biomarker = compute_biomarker(path, width_profile, key[0])
+        if biomarker:
+            biomarkers.append(biomarker)
+    return biomarkers
+
+
+def save_stage3_results(out_dir, all_trajectories, all_biomarkers, fps, video, frame_count, status="complete"):
+    """Persist current tracking results to disk. Useful for partial checkpoints."""
+    os.makedirs(out_dir, exist_ok=True)
+
+    traj_csv = os.path.join(out_dir, "trajectories.csv")
+    with open(traj_csv, "w", newline="") as f:
+        if all_trajectories:
+            writer = csv.DictWriter(f, fieldnames=all_trajectories[0].keys())
+            writer.writeheader()
+            writer.writerows(all_trajectories)
+
+    bio_csv = os.path.join(out_dir, "biomechanics.csv")
+    with open(bio_csv, "w", newline="") as f:
+        if all_biomarkers:
+            writer = csv.DictWriter(f, fieldnames=all_biomarkers[0].keys())
+            writer.writeheader()
+            writer.writerows(all_biomarkers)
+
+    summary = {
+        "status": status,
+        "total_tracks": len(all_biomarkers),
+        "total_frames_analyzed": frame_count,
+        "fps": fps,
+        "video": video,
+        "metrics": {
+            "velocity_mean_px_per_frame": float(np.mean([b["velocity_mean"] for b in all_biomarkers])) if all_biomarkers else None,
+            "velocity_max_px_per_frame": float(np.max([b["velocity_max"] for b in all_biomarkers])) if all_biomarkers else None,
+            "ADI_mean": float(np.mean([b["ADI"] for b in all_biomarkers])) if all_biomarkers else None,
+            "circularity_mean": float(np.mean([b["circularity_mean"] for b in all_biomarkers])) if all_biomarkers else None
+        }
+    }
+    summary_json = os.path.join(out_dir, "track_summary.json")
+    with open(summary_json, "w") as f:
+        json.dump(summary, f, indent=2)
+
+    return {
+        "trajectories_csv": traj_csv,
+        "biomechanics_csv": bio_csv,
+        "summary_json": summary_json,
+        "total_tracks": len(all_biomarkers),
+        "total_frames_analyzed": frame_count
     }
 
 
@@ -454,6 +523,7 @@ def main():
         ok, frame = cap.read()
         if not ok:
             break
+        frame_count += 1
 
         # Detect cells
         detections = detect_cells(frame, background, width_profile, verbose=(i % 1000 == 0))
@@ -474,66 +544,22 @@ def main():
                 })
 
         if (i + 1) % 5000 == 0:
-            print(f"  Processed {i+1}/{total_frames} frames")
+            all_biomarkers = build_track_biomarkers(all_trajectories, width_profile)
+            save_stage3_results(out_dir, all_trajectories, all_biomarkers, fps, VIDEO, frame_count, status="in_progress")
+            print(f"  Processed {i+1}/{total_frames} frames and saved checkpoint")
 
     cap.release()
 
     # Compute biomechanics from tracks
     print("\nComputing biomechanical metrics...")
-    track_paths = defaultdict(list)
-    for traj in all_trajectories:
-        key = (traj["track_id"],)
-        track_paths[key].append((
-            traj["frame"],
-            traj["cx"],
-            traj["cy"],
-            traj["area"],
-            traj["circularity"]
-        ))
-
-    for key, path in track_paths.items():
-        biomarker = compute_biomarker(path, width_profile)
-        if biomarker:
-            all_biomarkers.append(biomarker)
+    all_biomarkers = build_track_biomarkers(all_trajectories, width_profile)
 
     # Save results
     print(f"\nSaving results ({len(all_biomarkers)} tracks, {len(all_trajectories)} frames)...")
-
-    # Trajectories CSV
-    traj_csv = os.path.join(out_dir, "trajectories.csv")
-    with open(traj_csv, "w", newline="") as f:
-        if all_trajectories:
-            writer = csv.DictWriter(f, fieldnames=all_trajectories[0].keys())
-            writer.writeheader()
-            writer.writerows(all_trajectories)
-    print(f"  ✓ {traj_csv}")
-
-    # Biomechanics CSV
-    bio_csv = os.path.join(out_dir, "biomechanics.csv")
-    with open(bio_csv, "w", newline="") as f:
-        if all_biomarkers:
-            writer = csv.DictWriter(f, fieldnames=all_biomarkers[0].keys())
-            writer.writeheader()
-            writer.writerows(all_biomarkers)
-    print(f"  ✓ {bio_csv}")
-
-    # Track summary JSON
-    summary = {
-        "total_tracks": len(all_biomarkers),
-        "total_frames_analyzed": frame_count,
-        "fps": fps,
-        "video": VIDEO,
-        "metrics": {
-            "velocity_mean_px_per_frame": float(np.mean([b["velocity_mean"] for b in all_biomarkers])) if all_biomarkers else None,
-            "velocity_max_px_per_frame": float(np.max([b["velocity_max"] for b in all_biomarkers])) if all_biomarkers else None,
-            "ADI_mean": float(np.mean([b["ADI"] for b in all_biomarkers])) if all_biomarkers else None,
-            "circularity_mean": float(np.mean([b["circularity_mean"] for b in all_biomarkers])) if all_biomarkers else None
-        }
-    }
-    summary_json = os.path.join(out_dir, "track_summary.json")
-    with open(summary_json, "w") as f:
-        json.dump(summary, f, indent=2)
-    print(f"  ✓ {summary_json}")
+    save_stage3_results(out_dir, all_trajectories, all_biomarkers, fps, VIDEO, frame_count, status="complete")
+    print(f"  ✓ {os.path.join(out_dir, 'trajectories.csv')}")
+    print(f"  ✓ {os.path.join(out_dir, 'biomechanics.csv')}")
+    print(f"  ✓ {os.path.join(out_dir, 'track_summary.json')}")
 
     print("\n" + "=" * 60)
     print("STAGE 3 COMPLETE")

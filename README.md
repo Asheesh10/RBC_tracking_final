@@ -57,5 +57,3 @@ How it all works, with results and known limits: [`writeup/RBC_tracking_pipeline
 | `scripts/sync.ps1` / `scripts/sync.sh` | Deterministic `git pull --ff-only`; optional lab-only push. |
 | `writeup/` | Pipeline description: `draft.md` (source), `figs/`, `RBC_tracking_pipeline.pdf`. |
 | `.github/copilot-instructions.md`, `CLAUDE.md`, `.clinerules` | One-liners: follow `AGENTS.md`. |
-
-Do not add a second notes app. If it is not in this table, we probably should not add it.

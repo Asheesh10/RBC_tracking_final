@@ -1,14 +1,15 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Deterministic git pull / lab-only push. Do not wrap in extra git commands.
+  Deterministic git pull / lab-only push / branch push. Do not wrap in extra git commands.
 .EXAMPLE
   .\scripts\sync.ps1 pull
   .\scripts/sync.ps1 push-lab
+  .\scripts/sync.ps1 push-branch
 #>
 param(
     [Parameter(Mandatory = $true, Position = 0)]
-    [ValidateSet("pull", "push-lab")]
+    [ValidateSet("pull", "push-lab", "push-branch")]
     [string]$Command
 )
 
@@ -34,6 +35,27 @@ if ($Command -eq "pull") {
         exit 1
     }
     Write-Host "pull ok (fast-forward only)"
+    exit 0
+}
+
+if ($Command -eq "push-branch") {
+    $branch = "tracking-fixes"
+    $remoteRef = git ls-remote --heads origin "refs/heads/$branch"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Could not check whether origin/$branch exists. Stop."
+        exit 1
+    }
+    if ($remoteRef) {
+        Write-Error "Refusing to continue: origin/$branch already exists."
+        exit 1
+    }
+
+    git push origin "HEAD:refs/heads/$branch"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "git push failed. Stop. Do not force."
+        exit 1
+    }
+    Write-Host "push-branch ok: origin/$branch"
     exit 0
 }
 

@@ -1,0 +1,49 @@
+====================================================================
+STAGE 3: MULTI-CELL KYMOGRAPH PEELING + RTS KALMAN SMOOTHER
+====================================================================
+Video path : C:\Users\amara\Downloads\2A002 2_C001H001S0001-001.avi
+Output dir : C:\Users\amara\rbc_tracking\output
+
+[1/2] Running Multi-Cell Kymograph Peeling + RTS Kalman Smoother on 1500 frames (start=15000)...
+      [Stage 3A] Kymograph built for 500/1500 frames...
+      [Stage 3A] Kymograph built for 1000/1500 frames...
+      [Stage 3A] Kymograph built for 1500/1500 frames...
+      [DEBUG] r_thresh=23.80 r_smooth saved, len=1500
+      [DEBUG] candidate t_enter=6 (frame 15006) len=371 x0=1262 maxstep=7.0@rel61
+      [DEBUG] candidate t_enter=34 (frame 15034) len=334 x0=1279 maxstep=7.0@rel156
+      [DEBUG] candidate t_enter=315 (frame 15315) len=344 x0=1279 maxstep=7.0@rel80
+      [DEBUG] candidate t_enter=369 (frame 15369) len=333 x0=1279 maxstep=7.0@rel80
+      [DEBUG] candidate t_enter=518 (frame 15518) len=353 x0=1279 maxstep=7.0@rel75
+      [DEBUG] gap-DP [34,315] best path start=303 x0=1279 len=387 fit_med=3.82 noise_ref=1.77 ratio=2.16
+      [DEBUG] gap-search [34,315] no component found
+      [DEBUG] gap-DP [369,518] best path start=459 x0=1275 len=310 fit_med=8.49 noise_ref=1.91 ratio=4.44
+      [DEBUG] floor at frame 15659: 90.0 vs path_x there: 444.0
+      [DEBUG] gap-search [369,518] candidate t_enter=459 (frame 15459) len=310 exclude_n=5 exclude_t0s=[6, 34, 315, 369, 518]
+      [DEBUG] GAP-RECOVERED t_enter=459 (frame 15459)
+      [Stage 3B/3C] Refining CELL #1 (Frames 15006 -> 15376) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #2 (Frames 15034 -> 15367) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #3 (Frames 15315 -> 15658) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #4 (Frames 15369 -> 15701) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #5 (Frames 15459 -> 15768) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #6 (Frames 15518 -> 15870) via 2D Kymograph Peeling + RTS Kalman Smoother...
+
+[2/2] Rendering clean passage video: output/stage3/tracked_cell.mp4 ...
+
+====================================================================
+STAGE 3 COMPLETE
+====================================================================
+  ✓ Tracked Video File   : C:\Users\amara\rbc_tracking\output\stage3\tracked_cell.mp4 (905 frames)
+  ✓ Total Tracked Cells  : 6
+
+Tracked Cell Passages (Bottom-Right Entrance -> Top-Left Exit):
+  CellID | Frames |     FrameSpan |   X Passage Span | VelMean | AreaMean |   ADI |  Circ
+  ----------------------------------------------------------------------------------
+  #    1 |    371 |  15006->15376 |       1263->14px |    3.50 |    162.5 |  0.49 |  0.82
+  #    2 |    334 |  15034->15367 |       1271->23px |    3.81 |    144.8 |  0.46 |  0.84
+  #    3 |    344 |  15315->15658 |       1277->27px |    3.71 |    152.5 |  0.53 |  0.80
+  #    4 |    333 |  15369->15701 |        1261->8px |    3.83 |    145.5 |  0.46 |  0.84
+  #    5 |    310 |  15459->15768 |       1269->18px |    4.13 |    191.4 |  0.42 |  0.81
+  #    6 |    353 |  15518->15870 |       1275->21px |    3.62 |    157.8 |  0.42 |  0.81
+
+Open the video:
+  start C:\Users\amara\rbc_tracking\output\stage3\tracked_cell.mp4

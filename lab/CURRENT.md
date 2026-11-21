@@ -1,25 +1,34 @@
 # Current
 
-Updated: 2026-10-05
+Updated: 2026-11-18
 
 ## Now
 
-First **tube/lumen mask** exists on one unannotated AVI frame. Bath is excluded. Ready to review the overlay, then next would be cell detection *inside* that mask.
+Stage 3 tracker (`tracking.py`: kymograph DP + gap pass + re-trace + RTS smoother) tracks **6/6 cells** on frames 15000–16500, 3 on 1450–2950 and 2 on 18000–19500. Sai confirmed cells #1 and #3 visually on 15000–16500 (2026-11-15).
 
-Repo sharing is live: private GitHub [Sai2125/iisc-rbc-tracking](https://github.com/Sai2125/iisc-rbc-tracking). AVI is gitignored. `AGENTS.md` is the harness-agnostic rule file. Use `scripts/sync.ps1 pull` / `push-lab`.
+Today's changes (all Sai-approved, all in `tracking.py`, **not committed**):
+
+1. Gap pass is now a kymograph DP with fit-based validation. It recovers the faint 15459 cell and removes a ghost track stuck on debris at x≈731.
+2. Video is written as H.264 via ffmpeg (fallback OpenCV `avc1` → `mp4v`).
+3. Every main-pass track is re-traced with neighbours masked, a faster exit-funnel model and a noise-biased exit rule. This fixes cell #1 riding cell #2, cell #3 ending early, and the 1450 cell #2 lag.
+
+Repo: private GitHub [Sai2125/iisc-rbc-tracking](https://github.com/Sai2125/iisc-rbc-tracking). AVI is gitignored and lives at `C:\Users\amara\Downloads\`. `AGENTS.md` is the rule file.
+
+**Whole video (2026-11-18):** `run_full_video.py` with two offset window grids tracked **109 cells** over frames 0–37,274 (92 found by both grids, 14 grid A only, 3 added by grid B after a ridge-evidence check). Results on the Desktop in `RBC_full_video_results`. An entry-funnel check flags each cell: 90 `cell_seen`, 7 `uncertain`, 12 `no_cell_seen` (likely noise; kept but flagged). The faint 15459 cell is still missed.
 
 ## Next
 
-1. Look at `lab/evidence/20260916_tube_mask_probe/overlay.png` and decide if the ribbon is good enough.
-2. If yes: detect cell-like blobs only inside `lumen_mask.png` (still one frame).
-3. Later: reuse the mask on a few other seeked frames (tube should be static). Not a full-video pass.
+1. Resolve the git divergence (below) so today's `tracking.py` and lab notes can be committed and pushed.
+2. Residual tracking issues: box #4 (15000) runs ~10 px ahead in its last frames; boxes trail the cell centre by ~5–19 px in the exit funnel; cell #3 ends ~20 frames before the cell fully leaves.
+3. Structural (see `lab/failures.md`): faint cells can still be hidden by a neighbour's entry-funnel blanking (15459). Cells already in the bore at a window's start are untracked by design. Longer term: exit-side detection so an exit with no matching track is flagged.
 
 ## Blockers / open
 
-- Mask leaks a little at dirt stuck on the glass; far-right flare tip is slightly short. Write-up: `lab/failures.md`.
-- AVI header count 37,274 on this decode — still not reconciled with CIHX saved range 0–17,471.
+- **Git:** `scripts/sync.ps1 pull` fails. Local `master` is 1 ahead / 22 behind `origin/master`, and `tracking.py` has large uncommitted changes (earlier work plus today's). Needs Sai's decision; agents must not rebase/merge ad hoc.
+- `tracking.py` header comment says 1450 cell #2 exits at 2730; frames show ~2675.
+- Exit-funnel walls flicker in background-difference images (tube jitter); per-frame funnel detection is not usable as is.
+- AVI header count 37,274 still not reconciled with CIHX saved range 0–17,471.
 - No µm/pixel calibration. No physical speeds.
-- Flow direction / occupancy / squeezed cell: not addressed.
 
 ## Key paths
 
@@ -28,9 +37,12 @@ Repo sharing is live: private GitHub [Sai2125/iisc-rbc-tracking](https://github.
 | Agent rules (all harnesses) | `AGENTS.md` |
 | Human setup + map | `README.md` |
 | Git sync | `scripts/sync.ps1`, `scripts/sync.sh` |
+| Stage 3 tracker | `tracking.py` (run with `py`; `RBC_DEBUG_ENTRANCES=1` for decisions) |
+| Zone 1/3 prototype | `zone13_tracking.py` |
 | Related work | `lab/related-work.md` |
 | Failures | `lab/failures.md` |
+| Evidence (2026-11-15 tracker fixes) | `lab/evidence/20261115_gap_dp_fix/` |
+| Stage 1 outputs + Stage 3 runs (local) | `C:\Users\amara\rbc_tracking\output\` (`stage3/` = latest run; `stage3_*` = saved comparisons) |
+| AVI (local only) | `C:\Users\amara\Downloads\2A002 2_C001H001S0001-001.avi` |
 | Tube-mask script | `lab/tools/probe_tube_mask.py` |
-| Evidence (frame 24642) | `lab/evidence/20260916_tube_mask_probe/` |
-| AVI (local only) | `2A002 2_C001H001S0001-001.avi` |
 | Annotated screenshot (do not use for detection) | `image (3).png` |

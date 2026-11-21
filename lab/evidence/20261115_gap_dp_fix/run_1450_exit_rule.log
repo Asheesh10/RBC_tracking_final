@@ -1,0 +1,47 @@
+====================================================================
+STAGE 3: MULTI-CELL KYMOGRAPH PEELING + RTS KALMAN SMOOTHER
+====================================================================
+Video path : C:\Users\amara\Downloads\2A002 2_C001H001S0001-001.avi
+Output dir : C:\Users\amara\rbc_tracking\output
+
+[1/2] Running Multi-Cell Kymograph Peeling + RTS Kalman Smoother on 1500 frames (start=1450)...
+      [Stage 3A] Kymograph built for 500/1500 frames...
+      [Stage 3A] Kymograph built for 1000/1500 frames...
+      [Stage 3A] Kymograph built for 1500/1500 frames...
+      [DEBUG] r_thresh=21.06 r_smooth saved, len=1500
+      [DEBUG] candidate t_enter=93 (frame 1543) len=331 x0=1279 maxstep=7.0@rel71
+      [DEBUG] candidate t_enter=415 (frame 1865) len=385 x0=1262 maxstep=6.0@rel121
+      [DEBUG] REJECTED t_enter=415: weak raw_check (8.11 < 11.59)
+      [DEBUG] candidate t_enter=727 (frame 2177) len=388 x0=1267 maxstep=6.0@rel97
+      [DEBUG] REJECTED t_enter=727: weak raw_check (7.62 < 11.59)
+      [DEBUG] candidate t_enter=863 (frame 2313) len=402 x0=1279 maxstep=7.0@rel81
+      [DEBUG] candidate t_enter=946 (frame 2396) len=393 x0=1279 maxstep=7.0@rel77
+      [DEBUG] gap-DP [93,863] best path start=183 x0=1150 len=270 fit_med=3.62 noise_ref=2.08 ratio=1.74
+      [DEBUG] gap-search [93,863] no component found
+      [DEBUG] re-trace t_enter=93: length 331 -> 343
+      [DEBUG] re-trace t_enter=863: length 402 -> 360
+      [DEBUG] re-trace t_enter=946: length 393 -> 395
+      [Stage 3B/3C] Refining CELL #1 (Frames 1543 -> 1885) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #2 (Frames 2313 -> 2672) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #3 (Frames 2396 -> 2790) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3D] CELL #1: exit flare extended by 14 frames (1885 -> 1899), x 14 -> 2
+      [Stage 3D] CELL #3: exit flare extended by 15 frames (2790 -> 2805), x 12 -> 2
+
+[2/2] Rendering clean passage video: output/stage3/tracked_cell.mp4 ...
+      [Video] encoder: H.264 (ffmpeg libx264)
+
+====================================================================
+STAGE 3 COMPLETE
+====================================================================
+  ✓ Tracked Video File   : C:\Users\amara\rbc_tracking\output\stage3\tracked_cell.mp4 (930 frames)
+  ✓ Total Tracked Cells  : 3
+
+Tracked Cell Passages (Bottom-Right Entrance -> Top-Left Exit):
+  CellID | Frames |     FrameSpan |   X Passage Span | VelMean | AreaMean |   ADI |  Circ
+  ----------------------------------------------------------------------------------
+  #    1 |    357 |    1543->1899 |        1278->2px |    3.66 |    137.1 |  0.24 |  0.85
+  #    2 |    360 |    2313->2672 |       1268->14px |    3.56 |    165.7 |  0.51 |  0.81
+  #    3 |    410 |    2396->2805 |        1279->2px |    3.24 |    120.5 |  0.42 |  0.86
+
+Open the video:
+  start C:\Users\amara\rbc_tracking\output\stage3\tracked_cell.mp4

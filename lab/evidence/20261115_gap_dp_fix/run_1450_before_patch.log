@@ -1,0 +1,46 @@
+====================================================================
+STAGE 3: MULTI-CELL KYMOGRAPH PEELING + RTS KALMAN SMOOTHER
+====================================================================
+Video path : C:\Users\amara\Downloads\2A002 2_C001H001S0001-001.avi
+Output dir : C:\Users\amara\rbc_tracking\output
+
+[1/2] Running Multi-Cell Kymograph Peeling + RTS Kalman Smoother on 1500 frames (start=1450)...
+      [Stage 3A] Kymograph built for 500/1500 frames...
+      [Stage 3A] Kymograph built for 1000/1500 frames...
+      [Stage 3A] Kymograph built for 1500/1500 frames...
+      [DEBUG] r_thresh=21.06 r_smooth saved, len=1500
+      [DEBUG] candidate t_enter=93 (frame 1543) len=331 x0=1279 maxstep=7.0@rel71
+      [DEBUG] candidate t_enter=415 (frame 1865) len=385 x0=1262 maxstep=6.0@rel121
+      [DEBUG] REJECTED t_enter=415: weak raw_check (8.11 < 11.59)
+      [DEBUG] candidate t_enter=727 (frame 2177) len=388 x0=1267 maxstep=6.0@rel97
+      [DEBUG] REJECTED t_enter=727: weak raw_check (7.62 < 11.59)
+      [DEBUG] candidate t_enter=863 (frame 2313) len=402 x0=1279 maxstep=7.0@rel81
+      [DEBUG] candidate t_enter=946 (frame 2396) len=393 x0=1279 maxstep=7.0@rel77
+      [DEBUG] floor at frame 1833: 78.0 vs path_x there: 733.3457730830272
+      [DEBUG] gap-search [93,863] candidate t_enter=183 (frame 1633) len=435 exclude_n=3 exclude_t0s=[93, 863, 946]
+      [DEBUG] GAP-RECOVERED t_enter=183 (frame 1633)
+      [Stage 3B/3C] Refining CELL #1 (Frames 1543 -> 1873) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #2 (Frames 1633 -> 2067) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #3 (Frames 2313 -> 2714) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #4 (Frames 2396 -> 2788) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3D] CELL #1: exit flare extended by 26 frames (1873 -> 1899), x 26 -> 2
+      [Stage 3D] CELL #4: exit flare extended by 17 frames (2788 -> 2805), x 13 -> 2
+
+[2/2] Rendering clean passage video: output/stage3/tracked_cell.mp4 ...
+
+====================================================================
+STAGE 3 COMPLETE
+====================================================================
+  ✓ Tracked Video File   : C:\Users\amara\rbc_tracking\output\stage3\tracked_cell.mp4 (1098 frames)
+  ✓ Total Tracked Cells  : 4
+
+Tracked Cell Passages (Bottom-Right Entrance -> Top-Left Exit):
+  CellID | Frames |     FrameSpan |   X Passage Span | VelMean | AreaMean |   ADI |  Circ
+  ----------------------------------------------------------------------------------
+  #    1 |    357 |    1543->1899 |        1278->2px |    3.72 |    134.2 |  0.25 |  0.85
+  #    2 |    435 |    1633->2067 |      1256->730px |    1.30 |    121.3 |  0.77 |  0.74
+  #    3 |    402 |    2313->2714 |       1268->17px |    3.18 |    173.9 |  0.49 |  0.83
+  #    4 |    410 |    2396->2805 |        1279->2px |    3.24 |    119.8 |  0.42 |  0.86
+
+Open the video:
+  start C:\Users\amara\rbc_tracking\output\stage3\tracked_cell.mp4

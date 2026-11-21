@@ -1,0 +1,58 @@
+====================================================================
+STAGE 3: MULTI-CELL KYMOGRAPH PEELING + RTS KALMAN SMOOTHER
+====================================================================
+Video path : C:\Users\amara\Downloads\2A002 2_C001H001S0001-001.avi
+Output dir : C:\Users\amara\rbc_tracking\output
+
+[1/2] Running Multi-Cell Kymograph Peeling + RTS Kalman Smoother on 1500 frames (start=18000)...
+      [Stage 3A] Kymograph built for 500/1500 frames...
+      [Stage 3A] Kymograph built for 1000/1500 frames...
+      [Stage 3A] Kymograph built for 1500/1500 frames...
+      [DEBUG] r_thresh=16.04 r_smooth saved, len=1500
+      [DEBUG] candidate t_enter=1 (frame 18001) len=333 x0=1279 maxstep=7.0@rel75
+      [DEBUG] candidate t_enter=61 (frame 18061) len=383 x0=1259 maxstep=6.0@rel288
+      [DEBUG] REJECTED t_enter=61: weak raw_check (7.42 < 8.82)
+      [DEBUG] candidate t_enter=119 (frame 18119) len=388 x0=1261 maxstep=6.0@rel72
+      [DEBUG] REJECTED t_enter=119: weak raw_check (7.91 < 8.82)
+      [DEBUG] candidate t_enter=312 (frame 18312) len=385 x0=1259 maxstep=5.0@rel68
+      [DEBUG] REJECTED t_enter=312: weak raw_check (7.09 < 8.82)
+      [DEBUG] candidate t_enter=434 (frame 18434) len=386 x0=1270 maxstep=5.0@rel71
+      [DEBUG] REJECTED t_enter=434: weak raw_check (6.77 < 8.82)
+      [DEBUG] candidate t_enter=499 (frame 18499) len=384 x0=1259 maxstep=6.0@rel70
+      [DEBUG] REJECTED t_enter=499: weak raw_check (7.09 < 8.82)
+      [DEBUG] candidate t_enter=563 (frame 18563) len=400 x0=1259 maxstep=6.0@rel99
+      [DEBUG] REJECTED t_enter=563: weak raw_check (6.34 < 8.82)
+      [DEBUG] candidate t_enter=673 (frame 18673) len=337 x0=1279 maxstep=7.0@rel76
+      [DEBUG] candidate t_enter=750 (frame 18750) len=338 x0=1261 maxstep=6.0@rel45
+      [DEBUG] REJECTED t_enter=750: weak raw_check (7.24 < 8.82)
+      [DEBUG] candidate t_enter=783 (frame 18783) len=416 x0=1279 maxstep=6.0@rel109
+      [DEBUG] REJECTED t_enter=783: weak raw_check (6.63 < 8.82)
+      [DEBUG] candidate t_enter=876 (frame 18876) len=385 x0=1259 maxstep=6.0@rel129
+      [DEBUG] REJECTED t_enter=876: weak raw_check (7.52 < 8.82)
+      [DEBUG] candidate t_enter=1003 (frame 19003) len=384 x0=1257 maxstep=5.0@rel61
+      [DEBUG] REJECTED t_enter=1003: weak raw_check (7.38 < 8.82)
+      [DEBUG] candidate t_enter=1061 (frame 19061) len=388 x0=1266 maxstep=6.0@rel88
+      [DEBUG] REJECTED t_enter=1061: weak raw_check (7.13 < 8.82)
+      [DEBUG] candidate t_enter=1192 (frame 19192) len=294 x0=1257 maxstep=7.0@rel113
+      [DEBUG] REJECTED t_enter=1192: weak raw_check (7.65 < 8.82)
+      [DEBUG] retry (no valid dp ridge)
+      [DEBUG] retry (no valid dp ridge)
+      [Stage 3B/3C] Refining CELL #1 (Frames 18001 -> 18333) via 2D Kymograph Peeling + RTS Kalman Smoother...
+      [Stage 3B/3C] Refining CELL #2 (Frames 18673 -> 19009) via 2D Kymograph Peeling + RTS Kalman Smoother...
+
+[2/2] Rendering clean passage video: output/stage3/tracked_cell.mp4 ...
+
+====================================================================
+STAGE 3 COMPLETE
+====================================================================
+  ✓ Tracked Video File   : C:\Users\amara\rbc_tracking\output\stage3\tracked_cell.mp4 (750 frames)
+  ✓ Total Tracked Cells  : 2
+
+Tracked Cell Passages (Bottom-Right Entrance -> Top-Left Exit):
+  CellID | Frames |     FrameSpan |   X Passage Span | VelMean | AreaMean |   ADI |  Circ
+  ----------------------------------------------------------------------------------
+  #    1 |    333 |  18001->18333 |       1275->17px |    3.85 |    195.1 |  0.34 |  0.82
+  #    2 |    337 |  18673->19009 |       1273->22px |    3.78 |    189.7 |  0.35 |  0.80
+
+Open the video:
+  start C:\Users\amara\rbc_tracking\output\stage3\tracked_cell.mp4

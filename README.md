@@ -1,4 +1,4 @@
-# IIsc RBC tracking
+# IISc RBC tracking
 
 Track red blood cells in a high-speed channel video. Algorithmic detect-and-measure — not dumping the video into an LLM.
 

@@ -1,6 +1,6 @@
 # Current
 
-Updated: 2026-11-18
+Updated: 2026-11-23
 
 ## Now
 
@@ -16,11 +16,14 @@ Repo: private GitHub [Sai2125/iisc-rbc-tracking](https://github.com/Sai2125/iisc
 
 **Whole video (2026-11-18):** `run_full_video.py` with two offset window grids tracked **109 cells** over frames 0–37,274 (92 found by both grids, 14 grid A only, 3 added by grid B after a ridge-evidence check). Results on the Desktop in `RBC_full_video_results`. An entry-funnel check flags each cell: 90 `cell_seen`, 7 `uncertain`, 12 `no_cell_seen` (likely noise; kept but flagged). The faint 15459 cell is still missed.
 
+**Cell outlines (2026-11-23):** `cell_outlines.py` traces real outlines in the entry/exit funnels (dark-rim tracing on wobble-aligned background differences) and writes shape numbers per frame and per cell into `RBC_full_video_results`. 85 of the 109 tracks are RBC-sized; 24 are small particles (34–73 px²; includes all 12 `no_cell_seen`). 78 RBCs have ≥ 5 good entry outlines: resting circularity 0.990, AR 1.05, equivalent diameter 16.4 px (medians). Absolute area depends on focus. Exit outlines for 34 tracks. Committed on `rbc-final` and pushed to `final` (Asheesh10/RBC_tracking_final, `main`) on 2026-11-23.
+
 ## Next
 
-1. Resolve the git divergence (below) so today's `tracking.py` and lab notes can be committed and pushed.
-2. Residual tracking issues: box #4 (15000) runs ~10 px ahead in its last frames; boxes trail the cell centre by ~5–19 px in the exit funnel; cell #3 ends ~20 frames before the cell fully leaves.
-3. Structural (see `lab/failures.md`): faint cells can still be hidden by a neighbour's entry-funnel blanking (15459). Cells already in the bore at a window's start are untracked by design. Longer term: exit-side detection so an exit with no matching track is flagged.
+1. Tracker bug from the outlines work: a faint cell's track can slide onto the next cell's ridge in the lower bore (#37 → #38, frames 15200–15330), corrupting exit frames/transit times. Measure how often it happens before deciding on a fix in `tracking.py` (needs approval).
+2. Bore shape (length/elongation in the 7-px bore) is not measured yet; the outlines cover only the funnels.
+3. Residual tracking issues: box #4 (15000) runs ~10 px ahead in its last frames; boxes trail the cell centre by ~5–19 px in the exit funnel; cell #3 ends ~20 frames before the cell fully leaves.
+4. Structural (see `lab/failures.md`): faint cells can still be hidden by a neighbour's entry-funnel blanking (15459). Cells already in the bore at a window's start are untracked by design. Longer term: exit-side detection so an exit with no matching track is flagged.
 
 ## Blockers / open
 
